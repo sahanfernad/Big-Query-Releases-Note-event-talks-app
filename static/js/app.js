@@ -8,6 +8,7 @@ let currentSearch = '';
 // DOM Elements
 const refreshBtn = document.getElementById('refresh-btn');
 const exportCsvBtn = document.getElementById('export-csv-btn');
+const themeToggleBtn = document.getElementById('theme-toggle');
 const skeletonLoader = document.getElementById('skeleton-loader');
 const errorState = document.getElementById('error-state');
 const errorMessage = document.getElementById('error-message');
@@ -41,6 +42,7 @@ const toast = document.getElementById('toast');
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+    initializeTheme();
     fetchReleases(false);
     setupEventListeners();
 });
@@ -106,6 +108,7 @@ function setupEventListeners() {
     // Action buttons
     copyTweetBtn.addEventListener('click', copyTweetToClipboard);
     tweetBtn.addEventListener('click', shareOnX);
+    themeToggleBtn.addEventListener('click', toggleTheme);
 }
 
 // Fetch Release Notes from API
@@ -642,4 +645,38 @@ function exportToCsv() {
         toast.style.opacity = '0';
         setTimeout(() => toast.classList.add('hidden'), 350);
     }, 2000);
+}
+
+// Initialize Theme on load
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const sunIcon = themeToggleBtn.querySelector('.icon-sun');
+    const moonIcon = themeToggleBtn.querySelector('.icon-moon');
+    
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        if (sunIcon) sunIcon.classList.remove('hidden');
+        if (moonIcon) moonIcon.classList.add('hidden');
+    } else {
+        document.body.classList.remove('light-theme');
+        if (sunIcon) sunIcon.classList.add('hidden');
+        if (moonIcon) moonIcon.classList.remove('hidden');
+    }
+}
+
+// Toggle Theme between Dark and Light
+function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    
+    const sunIcon = themeToggleBtn.querySelector('.icon-sun');
+    const moonIcon = themeToggleBtn.querySelector('.icon-moon');
+    
+    if (isLight) {
+        if (sunIcon) sunIcon.classList.remove('hidden');
+        if (moonIcon) moonIcon.classList.add('hidden');
+    } else {
+        if (sunIcon) sunIcon.classList.add('hidden');
+        if (moonIcon) moonIcon.classList.remove('hidden');
+    }
 }

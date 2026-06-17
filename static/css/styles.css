@@ -1074,3 +1074,120 @@ body {
     width: 14px;
     height: 14px;
 }
+
+/* Icon-only button utility class */
+.btn-icon-only {
+    padding: 10px !important;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+}
+
+/* Light Theme CSS Variables Override */
+body.light-theme {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-card: rgba(255, 255, 255, 0.85);
+    --border-color: rgba(15, 23, 42, 0.08);
+    --border-hover: rgba(15, 23, 42, 0.15);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    
+    --accent-blue-glow: rgba(59, 130, 246, 0.15);
+    
+    /* Category Badges for Light Theme */
+    --category-feature-bg: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.03));
+    --category-feature-border: rgba(16, 185, 129, 0.35);
+    --category-feature-text: #065f46;
+    
+    --category-announcement-bg: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(109, 40, 217, 0.03));
+    --category-announcement-border: rgba(139, 92, 246, 0.35);
+    --category-announcement-text: #5b21b6;
+    
+    --category-issue-bg: linear-gradient(135deg, rgba(244, 63, 94, 0.12), rgba(225, 29, 72, 0.03));
+    --category-issue-border: rgba(244, 63, 94, 0.35);
+    --category-issue-text: #9f1239;
+
+    --category-deprecation-bg: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.03));
+    --category-deprecation-border: rgba(245, 158, 11, 0.35);
+    --category-deprecation-text: #92400e;
+    
+    --category-general-bg: linear-gradient(135deg, rgba(100, 116, 139, 0.12), rgba(71, 85, 105, 0.03));
+    --category-general-border: rgba(100, 116, 139, 0.35);
+    --category-general-text: #334155;
+}
+
+body.light-theme {
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.03) 0px, transparent 50%);
+}
+
+body.light-theme .checkbox-custom {
+    background: rgba(15, 23, 42, 0.03);
+    border: 2px solid var(--text-muted);
+}
+
+body.light-theme .checkbox-custom::after {
+    border: solid white;
+    border-width: 0 2px 2px 0;
+}
+
+body.light-theme .update-card.selected {
+    background: rgba(59, 130, 246, 0.04);
+}
+
+body.light-theme .selected-items-wrapper {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+body.light-theme .selected-tag {
+    background: rgba(15, 23, 42, 0.03);
+}
+
+body.light-theme .btn-tweet {
+    background-color: #0f172a;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+body.light-theme .btn-tweet:hover {
+    background-color: #1e293b;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+}
+
+body.light-theme .icon-x-white {
+    fill: #ffffff;
+}
+
+body.light-theme .icon-x {
+    color: #0f172a;
+}
+
+body.light-theme .update-body code {
+    background: rgba(15, 23, 42, 0.05);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .search-box input {
+    background: rgba(255, 255, 255, 0.8);
+    color: #0f172a;
+}
+
+body.light-theme .search-box input:focus {
+    background: #ffffff;
+}
+
+body.light-theme .composer-area textarea {
+    background: rgba(255, 255, 255, 0.8);
+    color: #0f172a;
+}
+
+body.light-theme .composer-area textarea:focus {
+    background: #ffffff;
+}
