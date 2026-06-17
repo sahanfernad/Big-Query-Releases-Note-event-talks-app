@@ -7,6 +7,7 @@ let currentSearch = '';
 
 // DOM Elements
 const refreshBtn = document.getElementById('refresh-btn');
+const exportCsvBtn = document.getElementById('export-csv-btn');
 const skeletonLoader = document.getElementById('skeleton-loader');
 const errorState = document.getElementById('error-state');
 const errorMessage = document.getElementById('error-message');
@@ -49,6 +50,7 @@ function setupEventListeners() {
     // Refresh buttons
     refreshBtn.addEventListener('click', () => fetchReleases(true));
     retryBtn.addEventListener('click', () => fetchReleases(true));
+    exportCsvBtn.addEventListener('click', exportToCsv);
     
     // Search event (debounced or input)
     searchInput.addEventListener('input', (e) => {
@@ -270,6 +272,13 @@ function renderFilteredFeed() {
                                     <line x1="10" y1="14" x2="21" y2="3"></line>
                                 </svg>
                             </a>
+                            <button class="btn-card-copy" onclick="copySingleCardDirect(this, '${escapeHtml(update.plain_text)}')">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
                             <button class="btn-card-tweet" onclick="tweetSingleDirect('${update.id}', '${escapeHtml(entry.title)}', '${escapeHtml(update.category)}', '${escapeHtml(update.plain_text)}', '${escapeHtml(entry.link)}')">
                                 <svg viewBox="0 0 24 24">
                                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -529,4 +538,108 @@ function escapeHtml(text) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+// Copy single card text directly
+window.copySingleCardDirect = async function(btnElement, text) {
+    if (!text) return;
+    try {
+        await navigator.clipboard.writeText(text);
+        
+        const span = btnElement.querySelector('span');
+        const originalText = span.textContent;
+        span.textContent = 'Copied!';
+        btnElement.classList.add('copied');
+        
+        toast.textContent = "Copied to clipboard!";
+        toast.classList.remove('hidden');
+        toast.style.opacity = '1';
+        
+        setTimeout(() => {
+            span.textContent = originalText;
+            btnElement.classList.remove('copied');
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 350);
+        }, 2000);
+    } catch (err) {
+        console.error('Copy card text failed:', err);
+    }
+};
+
+// Export visible updates to CSV
+function exportToCsv() {
+    const csvRows = [];
+    
+    // Header row
+    csvRows.push(['Date', 'Category', 'Description', 'Link']);
+    
+    allEntries.forEach(entry => {
+        entry.updates.forEach(update => {
+            let categoryMatch = false;
+            if (currentFilter === 'all') {
+                categoryMatch = true;
+            } else if (currentFilter === 'Issue') {
+                categoryMatch = update.category.toLowerCase().includes('issue') || update.category.toLowerCase().includes('fix');
+            } else {
+                categoryMatch = update.category.toLowerCase() === currentFilter.toLowerCase();
+            }
+
+            let searchMatch = true;
+            if (currentSearch) {
+                const searchScope = (update.category + " " + update.plain_text + " " + entry.title).toLowerCase();
+                searchMatch = searchScope.includes(currentSearch);
+            }
+            
+            if (categoryMatch && searchMatch) {
+                const escapeCsv = (val) => {
+                    if (!val) return '';
+                    let cleanVal = val.replace(/"/g, '""');
+                    return `"${cleanVal}"`;
+                };
+                
+                csvRows.push([
+                    escapeCsv(entry.title),
+                    escapeCsv(update.category),
+                    escapeCsv(update.plain_text),
+                    escapeCsv(entry.link)
+                ]);
+            }
+        });
+    });
+    
+    if (csvRows.length <= 1) {
+        toast.textContent = "No data available to export!";
+        toast.classList.remove('hidden');
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.classList.add('hidden'), 350);
+        }, 2000);
+        return;
+    }
+    
+    const csvContent = csvRows.map(row => row.join(',')).join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    
+    const dateStr = new Date().toISOString().split('T')[0];
+    const filterStr = currentFilter !== 'all' ? `_${currentFilter.toLowerCase()}` : '';
+    link.setAttribute('download', `bigquery_release_notes_${dateStr}${filterStr}.csv`);
+    
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.textContent = "CSV exported successfully!";
+    toast.classList.remove('hidden');
+    toast.style.opacity = '1';
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.classList.add('hidden'), 350);
+    }, 2000);
 }
