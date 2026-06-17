@@ -1191,3 +1191,107 @@ body.light-theme .composer-area textarea {
 body.light-theme .composer-area textarea:focus {
     background: #ffffff;
 }
+
+/* Offline Cache Banner Styling */
+.offline-banner {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.05));
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--radius-md);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--category-deprecation-text);
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.offline-banner .warning-icon {
+    font-size: 18px;
+}
+
+/* Light Theme overrides for Offline Banner */
+body.light-theme .offline-banner {
+    background: linear-gradient(135deg, rgba(217, 119, 6, 0.08), rgba(217, 119, 6, 0.03));
+    border-color: rgba(217, 119, 6, 0.25);
+    color: #92400e;
+}
+
+/* Filters Bar Footer and Select All */
+.filters-bar-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+    margin-top: 4px;
+}
+
+.btn-select-all {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 6px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: var(--transition-fast);
+}
+
+.btn-select-all:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.btn-select-all .checkbox-indicator {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--text-muted);
+    border-radius: 4px;
+    display: inline-block;
+    position: relative;
+    transition: var(--transition-fast);
+}
+
+.btn-select-all.active {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.btn-select-all.active .checkbox-indicator {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.btn-select-all.active .checkbox-indicator::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 3px;
+    height: 6px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Light Theme overrides for Select All */
+body.light-theme .btn-select-all {
+    background: rgba(15, 23, 42, 0.01);
+}
+
+body.light-theme .btn-select-all:hover {
+    background: rgba(15, 23, 42, 0.03);
+}
+
+body.light-theme .btn-select-all.active {
+    background: rgba(59, 130, 246, 0.06);
+}

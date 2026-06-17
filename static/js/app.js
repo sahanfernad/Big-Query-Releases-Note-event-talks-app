@@ -138,12 +138,24 @@ async function fetchReleases(forceRefresh = false) {
         
         allEntries = data.entries;
         
-        // Update last synced meta
+        // Update last synced meta & cache warning banner
+        const offlineBanner = document.getElementById('offline-banner');
         if (data.feed_updated) {
             const date = new Date(data.feed_updated);
-            syncStatusText.textContent = `Last synced: ${date.toLocaleString()}`;
+            const dateStr = date.toLocaleString();
+            syncStatusText.textContent = `Last synced: ${dateStr}`;
+            
+            if (data.status === 'fallback') {
+                if (offlineBanner) {
+                    offlineBanner.classList.remove('hidden');
+                    offlineBanner.querySelector('.banner-text').innerHTML = `Live feed connection failed. Displaying cached data from <strong>${dateStr}</strong>.`;
+                }
+            } else {
+                if (offlineBanner) offlineBanner.classList.add('hidden');
+            }
         } else {
             syncStatusText.textContent = `Last synced: Just now`;
+            if (offlineBanner) offlineBanner.classList.add('hidden');
         }
 
         // Render dashboard
@@ -307,9 +319,13 @@ function renderFilteredFeed() {
             <div class="error-illustration">🔍</div>
             <h2>No updates found</h2>
             <p>No release notes matched your search filters. Try adjusting your filter chips or query.</p>
+            <button onclick="resetFiltersAndSearch()" class="btn btn-secondary btn-sm" style="margin-top: 12px;">Reset Filters & Search</button>
         `;
         feedContainer.appendChild(emptyDiv);
     }
+
+    // Sync Select All button state
+    updateSelectAllBtnState();
 }
 
 // Toggle Selection via Checkbox/Card click
@@ -354,11 +370,15 @@ window.tweetSingleDirect = function(id, dateTitle, category, plainText, link) {
 // Update Tweet composer state
 function updateSidebar() {
     if (selectedUpdates.length === 0) {
-        selectedEmptyState.classList.remove('hidden');
-        selectedItemsList.innerHTML = '';
-        composerArea.classList.add('hidden');
-        clearSelectionBtn.classList.add('hidden');
-        return;
+    // Show empty state
+    selectedEmptyState.classList.remove('hidden');
+    selectedItemsList.innerHTML = '';
+    composerArea.classList.add('hidden');
+    clearSelectionBtn.classList.add('hidden');
+    
+    // Sync Select All button state
+    updateSelectAllBtnState();
+    return;
     }
 
     // Show panel
@@ -385,6 +405,9 @@ function updateSidebar() {
         `;
         selectedItemsList.appendChild(tag);
     });
+
+    // Sync Select All button state
+    updateSelectAllBtnState();
 
     updateTweetText();
 }
@@ -678,5 +701,118 @@ function toggleTheme() {
     } else {
         if (sunIcon) sunIcon.classList.add('hidden');
         if (moonIcon) moonIcon.classList.remove('hidden');
+    }
+}
+
+// Reset all search inputs and filter categories
+window.resetFiltersAndSearch = function() {
+    searchInput.value = '';
+    currentSearch = '';
+    currentFilter = 'all';
+    
+    filterChips.forEach(chip => {
+        if (chip.dataset.filter === 'all') chip.classList.add('active');
+        else chip.classList.remove('active');
+    });
+    
+    updateStatsCardsActiveState('all');
+    renderFilteredFeed();
+};
+
+// Select or deselect all currently visible release note updates
+window.toggleSelectAllVisible = function() {
+    const visible = [];
+    allEntries.forEach(entry => {
+        entry.updates.forEach(update => {
+            let categoryMatch = false;
+            if (currentFilter === 'all') {
+                categoryMatch = true;
+            } else if (currentFilter === 'Issue') {
+                categoryMatch = update.category.toLowerCase().includes('issue') || update.category.toLowerCase().includes('fix');
+            } else {
+                categoryMatch = update.category.toLowerCase() === currentFilter.toLowerCase();
+            }
+
+            let searchMatch = true;
+            if (currentSearch) {
+                const searchScope = (update.category + " " + update.plain_text + " " + entry.title).toLowerCase();
+                searchMatch = searchScope.includes(currentSearch);
+            }
+            
+            if (categoryMatch && searchMatch) {
+                visible.push({
+                    id: update.id,
+                    dateTitle: entry.title,
+                    category: update.category,
+                    plainText: update.plain_text,
+                    link: entry.link
+                });
+            }
+        });
+    });
+    
+    if (visible.length === 0) return;
+    
+    // Check if all visible updates are currently selected
+    const allSelected = visible.every(vis => selectedUpdates.some(sel => sel.id === vis.id));
+    
+    if (allSelected) {
+        // Deselect all visible
+        visible.forEach(vis => {
+            const index = selectedUpdates.findIndex(sel => sel.id === vis.id);
+            if (index !== -1) {
+                selectedUpdates.splice(index, 1);
+                const card = document.getElementById(`card-${vis.id}`);
+                if (card) card.classList.remove('selected');
+            }
+        });
+    } else {
+        // Select all visible (skip duplicates)
+        visible.forEach(vis => {
+            if (!selectedUpdates.some(sel => sel.id === vis.id)) {
+                selectedUpdates.push(vis);
+                const card = document.getElementById(`card-${vis.id}`);
+                if (card) card.classList.add('selected');
+            }
+        });
+    }
+    
+    updateSelectAllBtnState();
+    updateSidebar();
+};
+
+// Sync "Select All Visible" checkbox indicator state
+function updateSelectAllBtnState() {
+    const btn = document.getElementById('select-all-btn');
+    if (!btn) return;
+    
+    const visibleIds = [];
+    allEntries.forEach(entry => {
+        entry.updates.forEach(update => {
+            let categoryMatch = false;
+            if (currentFilter === 'all') {
+                categoryMatch = true;
+            } else if (currentFilter === 'Issue') {
+                categoryMatch = update.category.toLowerCase().includes('issue') || update.category.toLowerCase().includes('fix');
+            } else {
+                categoryMatch = update.category.toLowerCase() === currentFilter.toLowerCase();
+            }
+
+            let searchMatch = true;
+            if (currentSearch) {
+                const searchScope = (update.category + " " + update.plain_text + " " + entry.title).toLowerCase();
+                searchMatch = searchScope.includes(currentSearch);
+            }
+            
+            if (categoryMatch && searchMatch) {
+                visibleIds.push(update.id);
+            }
+        });
+    });
+    
+    if (visibleIds.length > 0 && visibleIds.every(visId => selectedUpdates.some(sel => sel.id === visId))) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
     }
 }

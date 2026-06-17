@@ -58,6 +58,12 @@
             </div>
         </header>
 
+        <!-- Offline Cache Banner -->
+        <div id="offline-banner" class="offline-banner hidden">
+            <span class="warning-icon">⚠️</span>
+            <span class="banner-text">Live feed connection failed. Displaying cached data.</span>
+        </div>
+
         <!-- Stats Overview Panel -->
         <section class="stats-panel">
             <div class="stat-card" data-category="all">
@@ -109,6 +115,13 @@
                         <button class="filter-chip" data-filter="Announcement">Announcements</button>
                         <button class="filter-chip" data-filter="Issue">Issues</button>
                         <button class="filter-chip" data-filter="Deprecation">Deprecations</button>
+                    </div>
+
+                    <div class="filters-bar-footer">
+                        <button id="select-all-btn" class="btn-select-all" onclick="toggleSelectAllVisible()" title="Select all visible cards matching filters">
+                            <span class="checkbox-indicator"></span>
+                            <span>Select All Visible</span>
+                        </button>
                     </div>
                 </div>
 
