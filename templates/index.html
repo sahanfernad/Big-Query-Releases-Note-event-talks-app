@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Tracker</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" type="image/png" href="https://www.gstatic.com/images/branding/product/2x/bigquery_64dp.png">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Layout: Sidebar & Content -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-area">
+                    <img src="https://www.gstatic.com/images/branding/product/2x/bigquery_64dp.png" alt="BigQuery Logo" class="logo-img">
+                    <div class="logo-text">
+                        <h1>BigQuery <span>Release Notes</span></h1>
+                        <p id="sync-status">Last updated: Loading...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="refresh-btn" class="btn btn-primary" title="Refresh Release Notes">
+                    <svg class="icon icon-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    </svg>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Overview Panel -->
+        <section class="stats-panel">
+            <div class="stat-card" data-category="all">
+                <div class="stat-icon">📊</div>
+                <div class="stat-info">
+                    <h3 id="stat-total">0</h3>
+                    <p>Total Updates</p>
+                </div>
+            </div>
+            <div class="stat-card" data-category="Feature">
+                <div class="stat-icon icon-feature">🚀</div>
+                <div class="stat-info">
+                    <h3 id="stat-features">0</h3>
+                    <p>Features</p>
+                </div>
+            </div>
+            <div class="stat-card" data-category="Announcement">
+                <div class="stat-icon icon-announcement">📢</div>
+                <div class="stat-info">
+                    <h3 id="stat-announcements">0</h3>
+                    <p>Announcements</p>
+                </div>
+            </div>
+            <div class="stat-card" data-category="Issue">
+                <div class="stat-icon icon-issue">⚠️</div>
+                <div class="stat-info">
+                    <h3 id="stat-issues">0</h3>
+                    <p>Issues / Fixes</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace -->
+        <div class="main-workspace">
+            <!-- Left Panel: Release Notes List -->
+            <main class="content-panel">
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="search-input" placeholder="Search updates (e.g. Gemini, partition)..." autocomplete="off">
+                    </div>
+                    
+                    <div class="category-filters">
+                        <button class="filter-chip active" data-filter="all">All</button>
+                        <button class="filter-chip" data-filter="Feature">Features</button>
+                        <button class="filter-chip" data-filter="Announcement">Announcements</button>
+                        <button class="filter-chip" data-filter="Issue">Issues</button>
+                        <button class="filter-chip" data-filter="Deprecation">Deprecations</button>
+                    </div>
+                </div>
+
+                <!-- Skeleton Loader -->
+                <div id="skeleton-loader" class="skeleton-container">
+                    <div class="skeleton-date-group">
+                        <div class="skeleton-date"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
+                    <div class="skeleton-date-group">
+                        <div class="skeleton-date"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="error-state" class="error-container hidden">
+                    <div class="error-illustration">❌</div>
+                    <h2>Failed to fetch updates</h2>
+                    <p id="error-message">Something went wrong while connecting to the BigQuery feed.</p>
+                    <button id="retry-btn" class="btn btn-secondary">Try Again</button>
+                </div>
+
+                <!-- Feed Container -->
+                <div id="feed-container" class="feed-container">
+                    <!-- Dynamic updates loaded here -->
+                </div>
+            </main>
+
+            <!-- Right Panel: Tweet Builder -->
+            <aside class="sidebar-panel">
+                <div class="tweet-builder-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg viewBox="0 0 24 24" class="icon-x" fill="currentColor">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                            <h3>Tweet Builder</h3>
+                        </div>
+                        <button id="clear-selection-btn" class="btn-clear hidden" title="Clear selection">Clear</button>
+                    </div>
+
+                    <div class="selected-items-wrapper">
+                        <div id="selected-empty-state" class="selected-empty">
+                            <div class="empty-icon">🐦</div>
+                            <p>Select updates on the left by checking the boxes or clicking the Tweet icon to compose a post.</p>
+                        </div>
+                        <div id="selected-items-list" class="selected-items-list">
+                            <!-- Dynamically added tags for selected notes -->
+                        </div>
+                    </div>
+
+                    <div class="composer-area hidden" id="composer-area">
+                        <div class="composer-title-row">
+                            <label for="tweet-textarea">Compose Post</label>
+                            <span id="char-counter" class="char-counter">0 / 280</span>
+                        </div>
+                        
+                        <textarea id="tweet-textarea" placeholder="What's happening in BigQuery?"></textarea>
+                        
+                        <div class="composer-options">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="opt-hashtags" checked>
+                                <span>Include hashtags (#BigQuery)</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="opt-links" checked>
+                                <span>Include documentation link</span>
+                            </label>
+                        </div>
+
+                        <div class="composer-actions">
+                            <button id="copy-tweet-btn" class="btn btn-secondary btn-full">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy Text</span>
+                            </button>
+                            <button id="tweet-btn" class="btn btn-tweet btn-full">
+                                <svg viewBox="0 0 24 24" class="icon-x-white" fill="currentColor">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                                <span>Post to X</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">Copied to clipboard!</div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
